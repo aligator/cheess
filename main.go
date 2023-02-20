@@ -1,7 +1,14 @@
 package main
 
-func main() {
+import (
+	"fmt"
 
+	"github.com/aligator/cheess/board"
+)
+
+func main() {
+	b := board.New()
+	fmt.Println(b)
 }
 
 /*
