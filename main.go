@@ -8,7 +8,8 @@ import (
 
 func main() {
 	b := board.New()
-	fmt.Println(b.Black.All() | b.White.All())
+
+	fmt.Println(b.White.Rook.Has(board.At(7, 0)), board.At(1, 0), b.White.Rook)
 }
 
 /*
@@ -21,5 +22,4 @@ ToDo:
 - Implement a valid move checking
 - Implement a first version of a move generator
 - ...
-
 */

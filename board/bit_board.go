@@ -1,8 +1,14 @@
-package bit_board
+package board
 
 import (
 	"fmt"
 )
+
+type Coordinate byte
+
+func At(x, y byte) Coordinate {
+	return Coordinate(x + y*8)
+}
 
 // BitBoard represents a chess board using just bits.
 //
@@ -35,8 +41,8 @@ import (
 //	       a        b        c        d        e        f        g        h
 type BitBoard uint64
 
-func New(values uint64) BitBoard {
-	return BitBoard(values)
+func (b BitBoard) Has(pos Coordinate) bool {
+	return (b>>pos)&1 == 1
 }
 
 func (b BitBoard) String() string {
