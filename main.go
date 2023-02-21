@@ -1,15 +1,14 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/aligator/cheess/board"
 )
 
 func main() {
 	b := board.New()
+	b.Move(board.At(0, 1), board.At(0, 3))
 
-	fmt.Println(b.White.Rook.Has(board.At(7, 0)), board.At(1, 0), b.White.Rook)
+	b.Move(board.At(0, 6), board.At(0, 3))
 }
 
 /*

@@ -1,22 +1,57 @@
 package board
 
-type Color = rune
+import "fmt"
+
+type Color rune
 
 const (
 	White Color = 'w'
 	Black Color = 'b'
 )
 
+func (c Color) String() string {
+	switch c {
+	case White:
+		return "White"
+	case Black:
+		return "Black"
+	default:
+		return "Unknown"
+	}
+}
+
 type PieceType byte
 
 const (
-	King PieceType = iota
+	None PieceType = iota
+	King
 	Queen
 	Rook
 	Bishop
 	Knight
 	Pawn
 )
+
+func (pt PieceType) String() string {
+	switch pt {
+	case None:
+		return "None"
+	case King:
+		return "King"
+	case Queen:
+		return "Queen"
+	case Rook:
+		return "Rook"
+	case Bishop:
+		return "Bishop"
+	case Knight:
+		return "Knight"
+	case Pawn:
+		return "Pawn"
+	default:
+		return "Unknown"
+	}
+}
 
 type Player struct {
 	King   BitBoard
@@ -49,6 +84,32 @@ func WhitePlayer() Player {
 	}
 }
 
+func (p Player) Get(position Coordinate) PieceType {
+	// Ifs are ordered based on what types may be moved more often.
+	// To be validated :-)
+
+	if p.Pawn.Has(position) {
+		return Pawn
+	}
+	if p.Bishop.Has(position) {
+		return Bishop
+	}
+	if p.Knight.Has(position) {
+		return Knight
+	}
+	if p.Queen.Has(position) {
+		return Queen
+	}
+	if p.Rook.Has(position) {
+		return Rook
+	}
+	if p.King.Has(position) {
+		return King
+	}
+
+	return None
+}
+
 func (p Player) All() BitBoard {
 	return (p.King | p.Queen | p.Rook | p.Bishop | p.Knight | p.Pawn)
 }
@@ -69,17 +130,20 @@ func New() Board {
 	}
 }
 
-// Move a piece from position 1 to position 2.
-// Slower than MoveExact but no information about the piece to move is needed.
-func (b Board) Move(x1, y1, x2, y2 byte) {
-	// Just check position in each bit board -> call MoveExact with the correct info.
-}
+// Move a piece from position1 to position2.
+func (b Board) Move(position1, position2 Coordinate) {
+	// Just check position in each bit board to find out where it belongs to.
+	var color Color
+	var piece PieceType
+	if b.Black.All().Has(position1) {
+		color = Black
+		piece = b.Black.Get(position1)
+	} else {
+		color = White
+		piece = b.White.Get(position1)
+	}
 
-// MoveExact does the same as Move, but it doesn't need to find out the type and color of the pice.
-// It is faster to use.
-// Incorrect piece or color has undefined behavior.
-func (b Board) MoveExact(piece PieceType, color Color, x1, y1, x2, y2 byte) {
-
+	fmt.Printf("found %v %v\n", color, piece)
 }
 
 func (b Board) All() BitBoard {
