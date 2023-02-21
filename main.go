@@ -8,7 +8,7 @@ import (
 
 func main() {
 	b := board.New()
-	fmt.Println(b)
+	fmt.Println(b.Black.All() | b.White.All())
 }
 
 /*
