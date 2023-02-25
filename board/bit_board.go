@@ -10,6 +10,11 @@ func At(x, y byte) Coordinate {
 	return Coordinate(x + y*8)
 }
 
+// BitBoard representation with the bit at the coordinate set to 1.
+func (c Coordinate) BitBoard() BitBoard {
+	return BitBoard(0) | BitBoard(1)<<c
+}
+
 // BitBoard represents a chess board using just bits.
 //
 // The simplest way to map coordinates to bits is to use an 8x8 array of 64 bits,

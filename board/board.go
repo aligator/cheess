@@ -1,59 +1,97 @@
 package board
 
-import "fmt"
-
-type Color rune
-
-const (
-	White Color = 'w'
-	Black Color = 'b'
+import (
+	"errors"
 )
 
-func (c Color) String() string {
-	switch c {
-	case White:
-		return "White"
-	case Black:
-		return "Black"
-	default:
-		return "Unknown"
+// PiceType encodes the pice and color.
+// If it is negative, it is white.
+// If it is positive, it is black.
+// If it is 0, it is None.
+// -7 and 1 encode only the color without a type.
+type PiceType int8
+
+const (
+	// PiceWhite encodes only the color, not which type it is.
+	PiceWhite PiceType = iota - 7
+	PiceWhiteKing
+	PiceWhiteQueen
+	PiceWhiteRook
+	PiceWhiteBishop
+	PiceWhiteKnight
+	PiceWhitePawn
+
+	PiceNone
+
+	// PiceBlack encodes only the color, not which type it is.
+	PiceBlack
+	PiceBlackKing
+	PiceBlackQueen
+	PiceBlackRook
+	PiceBlackBishop
+	PiceBlackKnight
+	PiceBlackPawn
+)
+
+// Color converts the pice type to the color-only pice type.
+func (pt PiceType) Color() PiceType {
+	if pt < 0 {
+		return PiceWhite
 	}
+	if pt > 0 {
+		return PiceBlack
+	}
+	return PiceNone
 }
 
-type PieceType byte
+func (pt PiceType) IsWhite() bool {
+	return pt < 0
+}
 
-const (
-	None PieceType = iota
-	King
-	Queen
-	Rook
-	Bishop
-	Knight
-	Pawn
-)
+func (pt PiceType) IsBlack() bool {
+	return pt > 0
+}
 
-func (pt PieceType) String() string {
+func (pt PiceType) String() string {
 	switch pt {
-	case None:
+	case PiceNone:
 		return "None"
-	case King:
-		return "King"
-	case Queen:
-		return "Queen"
-	case Rook:
-		return "Rook"
-	case Bishop:
-		return "Bishop"
-	case Knight:
-		return "Knight"
-	case Pawn:
-		return "Pawn"
+	case PiceWhiteKing:
+		return "WhiteKing"
+	case PiceWhiteQueen:
+		return "WhiteQueen"
+	case PiceWhiteRook:
+		return "WhiteRook"
+	case PiceWhiteBishop:
+		return "WhiteBishop"
+	case PiceWhiteKnight:
+		return "WhiteKnight"
+	case PiceWhitePawn:
+		return "WhitePawn"
+	case PiceBlackKing:
+		return "BlackKing"
+	case PiceBlackQueen:
+		return "BlackQueen"
+	case PiceBlackRook:
+		return "BlackRook"
+	case PiceBlackBishop:
+		return "BlackBishop"
+	case PiceBlackKnight:
+		return "BlackKnight"
+	case PiceBlackPawn:
+		return "BlackPawn"
+	case PiceBlack:
+		return "Black"
+	case PiceWhite:
+		return "White"
 	default:
 		return "Unknown"
 	}
 }
 
 type Player struct {
+	Color PiceType
+
 	King   BitBoard
 	Queen  BitBoard
 	Rook   BitBoard
@@ -64,6 +102,8 @@ type Player struct {
 
 func BlackPlayer() Player {
 	return Player{
+		Color: PiceBlack,
+
 		King:   BitBoard(0b00010000_00000000_00000000_00000000_00000000_00000000_00000000_00000000),
 		Queen:  BitBoard(0b00001000_00000000_00000000_00000000_00000000_00000000_00000000_00000000),
 		Rook:   BitBoard(0b10000001_00000000_00000000_00000000_00000000_00000000_00000000_00000000),
@@ -75,6 +115,8 @@ func BlackPlayer() Player {
 
 func WhitePlayer() Player {
 	return Player{
+		Color: PiceWhite,
+
 		King:   BitBoard(0b00000000_00000000_00000000_00000000_00000000_00000000_00000000_00010000),
 		Queen:  BitBoard(0b00000000_00000000_00000000_00000000_00000000_00000000_00000000_00001000),
 		Rook:   BitBoard(0b00000000_00000000_00000000_00000000_00000000_00000000_00000000_10000001),
@@ -84,30 +126,57 @@ func WhitePlayer() Player {
 	}
 }
 
-func (p Player) Get(position Coordinate) PieceType {
+func (p Player) GetType(position Coordinate) PiceType {
 	// Ifs are ordered based on what types may be moved more often.
 	// To be validated :-)
 
+	var piceType PiceType
+
 	if p.Pawn.Has(position) {
-		return Pawn
-	}
-	if p.Bishop.Has(position) {
-		return Bishop
-	}
-	if p.Knight.Has(position) {
-		return Knight
-	}
-	if p.Queen.Has(position) {
-		return Queen
-	}
-	if p.Rook.Has(position) {
-		return Rook
-	}
-	if p.King.Has(position) {
-		return King
+		piceType = PiceWhitePawn
+	} else if p.Bishop.Has(position) {
+		piceType = PiceWhiteBishop
+	} else if p.Knight.Has(position) {
+		piceType = PiceWhiteKnight
+	} else if p.Queen.Has(position) {
+		piceType = PiceWhiteQueen
+	} else if p.Rook.Has(position) {
+		piceType = PiceWhiteRook
+	} else if p.King.Has(position) {
+		piceType = PiceWhiteKing
+	} else {
+		return PiceNone
 	}
 
-	return None
+	if p.Color == PiceWhite {
+		return piceType
+	}
+	return piceType + 7 // Black is the same as white but shifted to > 0
+}
+
+func (p Player) Get(pice PiceType) BitBoard {
+	switch pice {
+	case PiceWhitePawn:
+	case PiceBlackPawn:
+		return p.Pawn
+	case PiceWhiteBishop:
+	case PiceBlackBishop:
+		return p.Bishop
+	case PiceWhiteKnight:
+	case PiceBlackKnight:
+		return p.Knight
+	case PiceWhiteQueen:
+	case PiceBlackQueen:
+		return p.Queen
+	case PiceWhiteRook:
+	case PiceBlackRook:
+		return p.Rook
+	case PiceWhiteKing:
+	case PiceBlackKing:
+		return p.King
+	}
+
+	return BitBoard(0)
 }
 
 func (p Player) All() BitBoard {
@@ -130,20 +199,40 @@ func New() Board {
 	}
 }
 
-// Move a piece from position1 to position2.
-func (b Board) Move(position1, position2 Coordinate) {
+// NewMove reads all needed data for a move.
+// It does not check anything.
+func (b Board) NewMove(source, target Coordinate) Move {
 	// Just check position in each bit board to find out where it belongs to.
-	var color Color
-	var piece PieceType
-	if b.Black.All().Has(position1) {
-		color = Black
-		piece = b.Black.Get(position1)
+	var playerSource Player
+	if b.Black.All().Has(source) {
+		playerSource = b.Black
 	} else {
-		color = White
-		piece = b.White.Get(position1)
+		playerSource = b.White
 	}
 
-	fmt.Printf("found %v %v\n", color, piece)
+	var playerTarget Player
+	if b.Black.All().Has(target) {
+		playerTarget = b.Black
+	} else {
+		playerTarget = b.White
+	}
+
+	move := Move{
+		Source:     source,
+		SourcePice: playerSource.GetType(source),
+		Target:     target,
+		TargetPice: playerTarget.GetType(target),
+	}
+
+	return move
+}
+
+func (b Board) CheckMove(move Move) error {
+	if move.SourcePice.Color() == move.TargetPice.Color() {
+		return errors.New("cannot move to own, occupied square")
+	}
+
+	return nil
 }
 
 func (b Board) All() BitBoard {
