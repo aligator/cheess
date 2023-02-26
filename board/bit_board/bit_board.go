@@ -1,4 +1,4 @@
-package board
+package bit_board
 
 import (
 	"fmt"

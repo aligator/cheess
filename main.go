@@ -4,13 +4,14 @@ import (
 	"fmt"
 
 	"github.com/aligator/cheess/board"
+	"github.com/aligator/cheess/board/bit_board"
 )
 
 func main() {
 	b := board.New()
-	fmt.Println(b.NewMove(board.At(0, 1), board.At(0, 3)))
+	fmt.Println(b.NewMove(bit_board.At(0, 1), bit_board.At(0, 3)))
 
-	fmt.Println(b.NewMove(board.At(0, 6), board.At(0, 3)))
+	fmt.Println(b.NewMove(bit_board.At(0, 6), bit_board.At(0, 3)))
 }
 
 /*

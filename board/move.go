@@ -1,9 +1,11 @@
 package board
 
+import "github.com/aligator/cheess/board/bit_board"
+
 type Move struct {
-	Source     Coordinate
+	Source     bit_board.Coordinate
 	SourcePice PiceType
-	Target     Coordinate
+	Target     bit_board.Coordinate
 	TargetPice PiceType
 
 	PromotedPice PiceType
