@@ -2,12 +2,25 @@ package bit_board
 
 import (
 	"fmt"
+	"strconv"
 )
 
 type Coordinate byte
 
 func At(x, y byte) Coordinate {
 	return Coordinate(x + y*8)
+}
+
+func (c Coordinate) X() byte {
+	return byte(c) % 8
+}
+
+func (c Coordinate) Y() byte {
+	return byte(c) % 8
+}
+
+func (c Coordinate) String() string {
+	return "(" + strconv.Itoa(int(c.X())) + "|" + strconv.Itoa(int(c.Y())) + ")"
 }
 
 // BitBoard representation with the bit at the coordinate set to 1.
@@ -48,6 +61,18 @@ type BitBoard uint64
 
 func (b BitBoard) Has(pos Coordinate) bool {
 	return (b>>pos)&1 == 1
+}
+
+func (b BitBoard) MoveAll(from, to Coordinate) BitBoard {
+	// Before the "from" coordinate, it has to be moved "backwards"
+	// and after it, it has to be moved "forward."
+	if to >= from {
+		b <<= BitBoard(to - from)
+	} else {
+		b >>= BitBoard(from - to)
+	}
+
+	return b
 }
 
 func (b BitBoard) String() string {

@@ -1,9 +1,10 @@
 package board
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/aligator/cheess/board/bit_board"
+	"github.com/aligator/cheess/board/lookup"
 )
 
 // PiceType encodes the pice and color.
@@ -153,6 +154,7 @@ func (p Player) GetType(position bit_board.Coordinate) PiceType {
 	if p.Color == PiceWhite {
 		return piceType
 	}
+
 	return piceType + 7 // Black is the same as white but shifted to > 0
 }
 
@@ -205,36 +207,63 @@ func New() Board {
 // It does not check anything.
 func (b Board) NewMove(source, target bit_board.Coordinate) Move {
 	// Just check position in each bit board to find out where it belongs to.
-	var playerSource Player
+	var playerSource *Player
 	if b.Black.All().Has(source) {
-		playerSource = b.Black
+		playerSource = &b.Black
 	} else {
-		playerSource = b.White
+		playerSource = &b.White
 	}
 
-	var playerTarget Player
+	var playerTarget *Player
 	if b.Black.All().Has(target) {
-		playerTarget = b.Black
+		playerTarget = &b.Black
 	} else {
-		playerTarget = b.White
+		playerTarget = &b.White
 	}
 
 	move := Move{
-		Source:     source,
-		SourcePice: playerSource.GetType(source),
-		Target:     target,
-		TargetPice: playerTarget.GetType(target),
+		SourcePlayer: playerSource,
+		Source:       source,
+		SourcePice:   playerSource.GetType(source),
+
+		TargetPlayer: playerTarget,
+		Target:       target,
+		TargetPice:   playerTarget.GetType(target),
 	}
 
 	return move
 }
 
 func (b Board) CheckMove(move Move) error {
-	if move.SourcePice.Color() == move.TargetPice.Color() {
-		return errors.New("cannot move to own, occupied square")
+	// if move.SourcePice.Color() == move.TargetPice.Color() {
+	// 	return errors.New("cannot move to own, occupied square")
+	// }
+
+	var canMoveTo bit_board.BitBoard
+	switch move.SourcePice {
+	case PiceBlackKing:
+	case PiceWhiteKing:
+		canMoveTo = b.computeKingIncomplete(move)
 	}
 
+	fmt.Println(canMoveTo)
 	return nil
+}
+
+func (b Board) computeKingIncomplete(move Move) bit_board.BitBoard {
+	// 1. Move the KingMove LOT to the position of the king.
+	var kingMoves bit_board.BitBoard = lookup.KingMove.MoveAll(lookup.KingMoveCenter, move.Source)
+
+	// 2. Clip the fileA and fileH due to overflow on left and right side.
+	x := move.Source.X()
+	if x == 0 {
+		kingMoves &= lookup.ClearFile[0]
+	} else if x == 7 {
+		kingMoves &= lookup.ClearFile[7]
+	}
+
+	// 3. Remove all own occupied positions.
+	return kingMoves & ^move.SourcePlayer.All()
 }
 
 func (b Board) All() bit_board.BitBoard {

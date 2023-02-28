@@ -5,13 +5,30 @@ import (
 
 	"github.com/aligator/cheess/board"
 	"github.com/aligator/cheess/board/bit_board"
+	"github.com/aligator/cheess/board/lookup"
 )
 
 func main() {
-	b := board.New()
-	fmt.Println(b.NewMove(bit_board.At(0, 1), bit_board.At(0, 3)))
+	b := board.Board{
+		White: board.Player{
+			Color: board.PiceWhite,
+			Queen: bit_board.BitBoard(0b00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000001),
+		},
+		Black: board.Player{
+			Color: board.PiceBlack,
+		},
+	}
 
-	fmt.Println(b.NewMove(bit_board.At(0, 6), bit_board.At(0, 3)))
+	fmt.Println(lookup.KingMove)
+
+	for i := 0; i < 64; i++ {
+		b.White.King = 1 << i
+		m := b.NewMove(bit_board.Coordinate(i), 0)
+		err := b.CheckMove(m)
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 
 /*
