@@ -244,6 +244,9 @@ func (b Board) CheckMove(move Move) error {
 	case PiceBlackKing:
 	case PiceWhiteKing:
 		canMoveTo = b.computeKingIncomplete(move)
+	case PiceBlackKnight:
+	case PiceWhiteKnight:
+		canMoveTo = b.computeKnightIncomplete(move)
 	}
 
 	fmt.Println(canMoveTo)
@@ -252,9 +255,9 @@ func (b Board) CheckMove(move Move) error {
 
 func (b Board) computeKingIncomplete(move Move) bit_board.BitBoard {
 	// 1. Move the KingMove LOT to the position of the king.
-	var kingMoves bit_board.BitBoard = lookup.KingMove.MoveAll(lookup.KingMoveCenter, move.Source)
+	var kingMoves bit_board.BitBoard = lookup.KingMove.MoveAll(lookup.MoveCenter, move.Source)
 
-	// 2. Clip the fileA and fileH due to overflow on left and right side.
+	// 2. Clip the fileA or fileH due to overflow on left and right side.
 	x := move.Source.X()
 	if x == 0 {
 		kingMoves &= lookup.ClearFile[0]
@@ -264,6 +267,22 @@ func (b Board) computeKingIncomplete(move Move) bit_board.BitBoard {
 
 	// 3. Remove all own occupied positions.
 	return kingMoves & ^move.SourcePlayer.All()
+}
+
+func (b Board) computeKnightIncomplete(move Move) bit_board.BitBoard {
+	// 1. Move the KingMove LOT to the position of the king.
+	var knightMoves bit_board.BitBoard = lookup.KnightMove.MoveAll(lookup.MoveCenter, move.Source)
+
+	// 2. Clip the fileA/B or fileH/G due to overflow on left and right side.
+	x := move.Source.X()
+	if x <= 1 {
+		knightMoves &= lookup.ClearFile[0] & lookup.ClearFile[1]
+	} else if x >= 6 {
+		knightMoves &= lookup.ClearFile[7] & lookup.ClearFile[6]
+	}
+
+	// 3. Remove all own occupied positions.
+	return knightMoves & ^move.SourcePlayer.All()
 }
 
 func (b Board) All() bit_board.BitBoard {

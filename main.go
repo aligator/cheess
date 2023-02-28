@@ -1,11 +1,8 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/aligator/cheess/board"
 	"github.com/aligator/cheess/board/bit_board"
-	"github.com/aligator/cheess/board/lookup"
 )
 
 func main() {
@@ -19,10 +16,8 @@ func main() {
 		},
 	}
 
-	fmt.Println(lookup.KingMove)
-
 	for i := 0; i < 64; i++ {
-		b.White.King = 1 << i
+		b.White.Knight = 1 << i
 		m := b.NewMove(bit_board.Coordinate(i), 0)
 		err := b.CheckMove(m)
 		if err != nil {
